@@ -1,5 +1,5 @@
-from board_game_agent.agents.state_parser import StateParser, missing_critical
-from board_game_agent.models.schemas import GameState, RuleCard
+from board_game_agent.agents.state_parser import StateParser, coerce_event_dict, missing_critical
+from board_game_agent.models.schemas import Event, GameState, RuleCard
 
 
 def _card():
@@ -33,3 +33,14 @@ def test_missing_critical_slots_forced_when_model_forgets():
     state = GameState(phase="play")
     missing = missing_critical(state, _card())
     assert "hand" in missing and "funds" in missing and "active_seat" in missing
+
+
+def test_coerce_event_aliases():
+    e = Event.model_validate(
+        coerce_event_dict({"type": "phase_declared", "raw_text": "运河期", "parsed": {"phase": "canal"}})
+    )
+    assert e.type == "phase_change"
+    e2 = Event.model_validate(
+        coerce_event_dict({"type": "state_update", "raw_text": "资金30", "parsed": {"me": {"funds": 30}}})
+    )
+    assert e2.type == "private_info"
