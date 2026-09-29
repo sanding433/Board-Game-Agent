@@ -6,3 +6,8 @@ __pycache__/
 .venv/
 venv/
 .pytest_cache/
+
+# Official rule PDFs (local only; do not commit)
+fixtures/birmingham/*.pdf
+fixtures/birmingham/rules.full.md
+
