@@ -40,7 +40,11 @@ Internal structured artifacts exist for multi-agent collaboration and debugging;
 ### Stack (recommended)
 
 - Python 3.11+
-- OpenAI-compatible chat API (model configurable via `.env`)
+- **LLM (MVP): DeepSeek API** via OpenAI-compatible client (`base_url` + API key in `.env`)
+- Default model split (overridable in config):
+  - RuleIngestor / StateParser / LegalityChecker → `deepseek-chat`
+  - Strategist / Critic → `deepseek-reasoner` (or `deepseek-chat` if latency/cost preferred)
+- Same client abstraction must accept any OpenAI-compatible endpoint later (local Ollama/etc.) without code changes to agents — **local deploy is out of MVP scope**, config-only future path
 - Lightweight custom orchestrator (deterministic state machine). Migrate to LangGraph later only if orchestration complexity warrants it.
 - Session files on disk under `sessions/<id>/`
 
@@ -108,7 +112,7 @@ sessions/<id>/
 | `undo` | Drop last user Event |
 | `end` | Close Session; keep files for replay |
 
-Config (`.env`): API key/base URL, model, reply language (default Chinese), optional `auto_advise_after_say` (default off while clarify-first is strict — after clarifications resolved, user runs `advise` or enables auto).
+Config (`.env`): `DEEPSEEK_API_KEY`, `DEEPSEEK_BASE_URL` (default `https://api.deepseek.com`), `MODEL_FAST` / `MODEL_REASONING`, reply language (default Chinese), optional `auto_advise_after_say` (default off while clarify-first is strict — after clarifications resolved, user runs `advise` or enables auto).
 
 Verbose flag: `--verbose` prints paths to JSON artifacts and candidate/legality summaries; default UX is NL only.
 
@@ -174,3 +178,4 @@ Success for MVP:
 - Full-game Session with timeline, not one-shot position tool
 - Clarify-before-advise (policy A)
 - CLI first; Python + light custom orchestration
+- MVP LLM: DeepSeek API only; OpenAI-compatible client so local models can plug in later
