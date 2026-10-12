@@ -48,6 +48,17 @@ class Orchestrator:
         self.store.write_rule_card(sid, card)
         return f"规则已加载：{card.game_name or path.name}。critical_slots={card.critical_slots}"
 
+    def load_rules_prepared(self, sid: str, raw_text: str, card) -> str:
+        """Install rules + card without calling the LLM (for multi-seat table matches)."""
+        from board_game_agent.models.schemas import RuleCard
+
+        sid = self._require_sid(sid)
+        if not isinstance(card, RuleCard):
+            card = RuleCard.model_validate(card)
+        self.store.write_rules_raw(sid, raw_text)
+        self.store.write_rule_card(sid, card)
+        return f"规则已加载（预计算）：{card.game_name or 'game'}。critical_slots={card.critical_slots}"
+
     def _format_clarifications(self, items: list[Clarification]) -> str:
         lines = ["信息不足，请补充："]
         for c in items:
