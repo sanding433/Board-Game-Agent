@@ -61,5 +61,17 @@ class LLMClient:
     def chat_json(
         self, messages: list[dict[str, str]], *, tier: Tier = "fast"
     ) -> dict[str, Any]:
-        text = self.chat(messages, tier=tier)
-        return extract_json_object(text)
+        last_err: Exception | None = None
+        for attempt in range(3):
+            text = self.chat(messages, tier=tier)
+            if not (text or "").strip():
+                last_err = ValueError("empty LLM response")
+                time.sleep(0.5)
+                continue
+            try:
+                return extract_json_object(text)
+            except (json.JSONDecodeError, ValueError) as exc:
+                last_err = exc
+                time.sleep(0.5)
+                continue
+        raise last_err if last_err else ValueError("chat_json failed")
